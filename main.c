@@ -91,12 +91,12 @@ int i,x,y;
     {
         if(GRID_CELL(grid,x,y).type==SOLID)
         {
-            for(i=0;i<8;i++)
+            for(i=0;i<4;i++)
             {
-            put_pixel(screen,x*8+i,y*8,80,80,80);
-            put_pixel(screen,x*8+i,y*8+7,80,80,80);
-            put_pixel(screen,x*8,y*8+i,80,80,80);
-            put_pixel(screen,x*8+7,y*8+i,80,80,80);
+            put_pixel(screen,x*4+i,y*4,80,80,80);
+            put_pixel(screen,x*4+i,y*4+3,80,80,80);
+            put_pixel(screen,x*4,y*4+i,80,80,80);
+            put_pixel(screen,x*4+3,y*4+i,80,80,80);
             }
         }
     }
@@ -104,7 +104,7 @@ int i,x,y;
     {
     float u=0.1*sqrt(particles->particles[i].velocity_x*particles->particles[i].velocity_x+particles->particles[i].velocity_y*particles->particles[i].velocity_y);
         if(u>1)u=1;
-    put_pixel(screen,(int)((particles->particles[i].position_x+0.5)*8.0),(int)((particles->particles[i].position_y+0.5)*8.0),255*u,255*u,255);
+    put_pixel(screen,(int)((particles->particles[i].position_x+0.5)*4.0),(int)((particles->particles[i].position_y+0.5)*4.0),255*u,255*u,255);
     }
 SDL_UnlockSurface(screen);
 SDL_Flip(screen);
@@ -134,11 +134,14 @@ particle_system_t* particles=particle_system_new(16192);
 
 //particle_system_populate_rectangle(particles,1,40,299,49);
 //particle_system_populate_rectangle(particles,145,5,155,15);
+/*
+grid_set_rectangle(grid,SOLID,0,15,30,49);
+grid_set_rectangle(grid,SOLID,30,25,60,49);
+grid_set_rectangle(grid,SOLID,60,20,60,49);
+particle_system_populate_rectangle(particles,61,30,149,49);
+*/
 
-//grid_set_rectangle(grid,SOLID,0,15,30,49);
-//grid_set_rectangle(grid,SOLID,30,25,60,49);
-//grid_set_rectangle(grid,SOLID,60,20,60,49);
-//particle_system_populate_rectangle(particles,61,30,149,49);
+//particle_system_populate_rectangle(particles,1,90,299,99);
 //particle_system_populate_rectangle(particles,145,5,155,15);
 
 
@@ -153,7 +156,7 @@ particle_system_populate_rectangle(particles,0,20,20,40);
 particle_system_populate_rectangle(particles,20,30,30,40);
 
 
-SDL_Surface* screen=SDL_SetVideoMode(grid->width*8,grid->height*8,32,SDL_DOUBLEBUF);
+SDL_Surface* screen=SDL_SetVideoMode(grid->width*4,grid->height*4,32,SDL_DOUBLEBUF);
 
 int timer=0;
     while(!SDL_GetKeyState(NULL)[SDLK_SPACE])
