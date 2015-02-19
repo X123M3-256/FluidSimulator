@@ -221,7 +221,7 @@ int x,y;
 
 void grid_conjugate_gradient(grid_t* grid)
 {
-int i,x,y;
+int x,y;
 //Calculate residual vector
     for(x=1;x<grid->width-1;x++)
     for(y=1;y<grid->height-1;y++)
