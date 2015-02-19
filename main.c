@@ -84,15 +84,22 @@ all.w=screen->w;
 all.h=screen->h;
 SDL_FillRect(screen,&all,0);
 SDL_LockSurface(screen);
-/*
-int x,y;
+
+int i,x,y;
     for(y=0;y<grid->height;y++)
     for(x=0;x<grid->width;x++)
     {
-    //render_cell(screen,grid,x,y);
+        if(GRID_CELL(grid,x,y).type==SOLID)
+        {
+            for(i=0;i<8;i++)
+            {
+            put_pixel(screen,x*8+i,y*8,80,80,80);
+            put_pixel(screen,x*8+i,y*8+7,80,80,80);
+            put_pixel(screen,x*8,y*8+i,80,80,80);
+            put_pixel(screen,x*8+7,y*8+i,80,80,80);
+            }
+        }
     }
-    */
-int i;
     for(i=0;i<particles->num_particles;i++)
     {
     float u=0.1*sqrt(particles->particles[i].velocity_x*particles->particles[i].velocity_x+particles->particles[i].velocity_y*particles->particles[i].velocity_y);
@@ -112,25 +119,39 @@ atexit(SDL_Quit);
 
 
 
-grid_t* grid=grid_new(300,50);
+grid_t* grid=grid_new(200,50);
 
 particle_system_t* particles=particle_system_new(16192);
 
-//grid_set_rectangle(grid,SOLID,0,35,30,49);
-//particle_system_populate_rectangle(particles,30,45,99,49);
+//particle_system_populate_rectangle(particles,1,20,49,49);
 
-particle_system_populate_rectangle(particles,0,40,299,49);
+//grid_set_rectangle(grid,SOLID,0,35,30,49);
+//grid_set_rectangle(grid,SOLID,150,35,150,49);
+//particle_system_populate_rectangle(particles,30,40,149,49);
+
+//particle_system_populate_rectangle(particles,1,40,299,49);
 //particle_system_populate_rectangle(particles,0,10,30,40);
 
-/*
+//particle_system_populate_rectangle(particles,1,40,299,49);
+//particle_system_populate_rectangle(particles,145,5,155,15);
+
+//grid_set_rectangle(grid,SOLID,0,15,30,49);
+//grid_set_rectangle(grid,SOLID,30,25,60,49);
+//grid_set_rectangle(grid,SOLID,60,20,60,49);
+//particle_system_populate_rectangle(particles,61,30,149,49);
+//particle_system_populate_rectangle(particles,145,5,155,15);
+
+
 grid_set_rectangle(grid,SOLID,100,45,199,49);
 grid_set_rectangle(grid,SOLID,90,47,199,49);
 grid_set_rectangle(grid,SOLID,110,43,199,49);
-particle_system_populate_rectangle(particles,0,40,110,49);
+particle_system_populate_rectangle(particles,0,40,90,49);
+particle_system_populate_rectangle(particles,90,40,100,47);
+particle_system_populate_rectangle(particles,100,40,110,45);
 particle_system_populate_rectangle(particles,110,40,199,43);
 particle_system_populate_rectangle(particles,0,20,20,40);
-particle_system_populate_rectangle(particles,20,30,40,40);
-*/
+particle_system_populate_rectangle(particles,20,30,30,40);
+
 
 SDL_Surface* screen=SDL_SetVideoMode(grid->width*8,grid->height*8,32,SDL_DOUBLEBUF);
 
@@ -139,7 +160,7 @@ int timer=0;
     {
     SDL_PumpEvents();
     compute_simulation_step(particles,grid);
-        if(timer++%6==0)particle_system_populate_rectangle(particles,1,25,50,27);
+        //if(timer++%5==0)particle_system_populate_rectangle(particles,1,2,15,4);
     render(screen,grid,particles);
     }
 return 0;
