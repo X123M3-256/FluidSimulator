@@ -166,7 +166,7 @@ int i;
     }
 }
 
-#define DENSITY 1000.0
+
 void grid_enforce_boundary(grid_t* grid)
 {
 int x,y;
@@ -184,7 +184,8 @@ int x,y;
     }
 }
 
-void grid_jacobian_iteration(grid_t* grid,float delta_t)
+/*
+void grid_jacobian_iteration(grid_t* grid)
 {
 int x,y;
     for(y=1;y<grid->height-1;y++)
@@ -192,18 +193,9 @@ int x,y;
     {
         if(GRID_CELL(grid,x,y).type==FLUID)
         {
-        float neighbours=0.0;
-        float divergence=(GRID_VELOCITY_X(grid,PLUS_HALF(x),y)-GRID_VELOCITY_X(grid,MINUS_HALF(x),y))+(GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))-GRID_VELOCITY_Y(grid,x,MINUS_HALF(y)));
-        //Solid cells have zero velocity in or out
-            if(GRID_CELL(grid,x+1,y).type!=SOLID)neighbours++;
-            if(GRID_CELL(grid,x-1,y).type!=SOLID)neighbours++;
-            if(GRID_CELL(grid,x,y+1).type!=SOLID)neighbours++;
-            if(GRID_CELL(grid,x,y-1).type!=SOLID)neighbours++;
-
         //Solid and empty cells have pressure 0, so no need to check for them
         float pressure_sum=GRID_CELL(grid,x+1,y).pressure+GRID_CELL(grid,x-1,y).pressure+GRID_CELL(grid,x,y+1).pressure+GRID_CELL(grid,x,y-1).pressure;
-
-        GRID_CELL(grid,x,y).next_pressure=(pressure_sum-(DENSITY/delta_t)*divergence)/neighbours;
+        GRID_CELL(grid,x,y).next_pressure=(pressure_sum-GRID_CELL(grid,x,y).divergence)/GRID_CELL(grid,x,y).neighbours;
         }
     }
     for(y=1;y<grid->height-1;y++)
@@ -215,6 +207,128 @@ int x,y;
         }
     }
 }
+*/
+
+
+void grid_conjugate_gradient(grid_t* grid)
+{
+int i,x,y;
+//Calculate residual vector
+    for(x=1;x<grid->width-1;x++)
+    for(y=1;y<grid->height-1;y++)
+    {
+        if(GRID_CELL(grid,x,y).type==FLUID)
+        {
+        float matrix_pressure=-GRID_CELL(grid,x,y).neighbours*GRID_CELL(grid,x,y).pressure;
+        matrix_pressure+=GRID_CELL(grid,x+1,y).pressure;
+        matrix_pressure+=GRID_CELL(grid,x-1,y).pressure;
+        matrix_pressure+=GRID_CELL(grid,x,y+1).pressure;
+        matrix_pressure+=GRID_CELL(grid,x,y-1).pressure;
+        GRID_CELL(grid,x,y).residual=GRID_CELL(grid,x,y).divergence-matrix_pressure;
+        }else GRID_CELL(grid,x,y).residual=0.0;
+    }
+//Set conjugate vector equal to residual vector
+    for(x=1;x<grid->width-1;x++)
+    for(y=1;y<grid->height-1;y++)
+    {
+    GRID_CELL(grid,x,y).conjugate=GRID_CELL(grid,x,y).residual;
+    }
+//Iterations
+    while(1)
+    {
+    //Calculate matrix*residual
+        for(x=1;x<grid->width-1;x++)
+        for(y=1;y<grid->height-1;y++)
+        {
+            if(GRID_CELL(grid,x,y).type==FLUID)
+            {
+            GRID_CELL(grid,x,y).matrix_conjugate=-GRID_CELL(grid,x,y).neighbours*GRID_CELL(grid,x,y).conjugate;
+            GRID_CELL(grid,x,y).matrix_conjugate+=GRID_CELL(grid,x+1,y).conjugate;
+            GRID_CELL(grid,x,y).matrix_conjugate+=GRID_CELL(grid,x-1,y).conjugate;
+            GRID_CELL(grid,x,y).matrix_conjugate+=GRID_CELL(grid,x,y+1).conjugate;
+            GRID_CELL(grid,x,y).matrix_conjugate+=GRID_CELL(grid,x,y-1).conjugate;
+            }
+        }
+    //Calculate residual norm squared
+    float residual_norm_squared=0.0;
+        for(x=1;x<grid->width-1;x++)
+        for(y=1;y<grid->height-1;y++)
+        {
+            if(GRID_CELL(grid,x,y).type==FLUID)
+            {
+            residual_norm_squared+=GRID_CELL(grid,x,y).residual*GRID_CELL(grid,x,y).residual;
+            }
+        }
+    //Calculate alpha
+    float alpha_denominator=0.0;
+        for(x=1;x<grid->width-1;x++)
+        for(y=1;y<grid->height-1;y++)
+        {
+            if(GRID_CELL(grid,x,y).type==FLUID)
+            {
+            alpha_denominator+=GRID_CELL(grid,x,y).conjugate*GRID_CELL(grid,x,y).matrix_conjugate;
+            }
+        }
+    float alpha=residual_norm_squared/alpha_denominator;
+    //Calculate new pressure and residual
+        for(x=1;x<grid->width-1;x++)
+        for(y=1;y<grid->height-1;y++)
+        {
+            if(GRID_CELL(grid,x,y).type==FLUID)
+            {
+            GRID_CELL(grid,x,y).pressure+=alpha*GRID_CELL(grid,x,y).conjugate;
+            GRID_CELL(grid,x,y).residual-=alpha*GRID_CELL(grid,x,y).matrix_conjugate;
+            }
+        }
+    //Check size of residual
+    float max_component=0.0;
+        for(x=1;x<grid->width-1;x++)
+        for(y=1;y<grid->height-1;y++)
+        {
+            if(fabs(GRID_CELL(grid,x,y).residual)>max_component)max_component=fabs(GRID_CELL(grid,x,y).residual);
+        }
+        if(max_component<0.001)return;
+    //Calculate beta
+    float beta_numerator=0.0;
+        for(x=1;x<grid->width-1;x++)
+        for(y=1;y<grid->height-1;y++)
+        {
+            if(GRID_CELL(grid,x,y).type==FLUID)
+            {
+            beta_numerator+=GRID_CELL(grid,x,y).residual*GRID_CELL(grid,x,y).residual;
+            }
+        }
+    float beta=beta_numerator/residual_norm_squared;
+    //Calculate new conjugate vector
+        for(x=1;x<grid->width-1;x++)
+        for(y=1;y<grid->height-1;y++)
+        {
+            if(GRID_CELL(grid,x,y).type==FLUID)
+            {
+            GRID_CELL(grid,x,y).conjugate=GRID_CELL(grid,x,y).residual+beta*GRID_CELL(grid,x,y).conjugate;
+            }
+        }
+    }
+}
+
+void grid_calculate_divergence(grid_t* grid)
+{
+int x,y;
+    for(y=1;y<grid->height-1;y++)
+    for(x=1;x<grid->width-1;x++)
+    {
+        if(GRID_CELL(grid,x,y).type==FLUID)
+        {
+        GRID_CELL(grid,x,y).neighbours=0.0;
+        GRID_CELL(grid,x,y).divergence=(GRID_VELOCITY_X(grid,PLUS_HALF(x),y)-GRID_VELOCITY_X(grid,MINUS_HALF(x),y))+(GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))-GRID_VELOCITY_Y(grid,x,MINUS_HALF(y)));
+        //Solid cells have zero velocity in or out
+            if(GRID_CELL(grid,x+1,y).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+            if(GRID_CELL(grid,x-1,y).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+            if(GRID_CELL(grid,x,y+1).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+            if(GRID_CELL(grid,x,y-1).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+        }
+    }
+}
 
 void grid_project(grid_t* grid,float delta_t)
 {
@@ -222,19 +336,21 @@ int i;
 int x,y;
 //Set boundary conditions
 grid_enforce_boundary(grid);
+//Calculate divergence (and neighbours)
+grid_calculate_divergence(grid);
 //Solve for pressure
-    for(i=0;i<200;i++)grid_jacobian_iteration(grid,delta_t);
+    //for(i=0;i<1000;i++)grid_jacobian_iteration(grid);
+    grid_conjugate_gradient(grid);
 //Update velocity
-
     for(y=1;y<grid->height;y++)
     for(x=1;x<grid->width;x++)
     {
         if(GRID_CELL(grid,x,y).type!=SOLID)
         {
             //Apply X pressure
-            if(GRID_CELL(grid,x-1,y).type!=SOLID)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)-=(delta_t/DENSITY)*(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x-1,y).pressure);
+            if(GRID_CELL(grid,x-1,y).type!=SOLID)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)-=(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x-1,y).pressure);
             //Apply Y pressure
-            if(GRID_CELL(grid,x,y-1).type!=SOLID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))-=(delta_t/DENSITY)*(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x,y-1).pressure);
+            if(GRID_CELL(grid,x,y-1).type!=SOLID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))-=(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x,y-1).pressure);
         }
     }
 }

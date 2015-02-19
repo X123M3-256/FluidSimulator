@@ -12,8 +12,13 @@ EMPTY
 typedef struct
 {
 grid_cell_type_t type;
+float divergence;
+float neighbours;
 float pressure;
-float next_pressure;
+//For conjugate gradient
+float matrix_conjugate;
+float residual;
+float conjugate;
 }grid_cell_t;
 
 
