@@ -222,8 +222,8 @@ void grid_conjugate_gradient(grid_t* grid)
 {
 int x,y;
 //Calculate residual vector
-    for(x=1;x<grid->width-1;x++)
     for(y=1;y<grid->height-1;y++)
+    for(x=1;x<grid->width-1;x++)
     {
         if(GRID_CELL(grid,x,y).type==FLUID)
         {
@@ -236,8 +236,8 @@ int x,y;
         }else GRID_CELL(grid,x,y).residual=0.0;
     }
 //Set conjugate vector equal to residual vector
-    for(x=1;x<grid->width-1;x++)
     for(y=1;y<grid->height-1;y++)
+    for(x=1;x<grid->width-1;x++)
     {
     GRID_CELL(grid,x,y).conjugate=GRID_CELL(grid,x,y).residual;
     }
@@ -247,8 +247,8 @@ int x,y;
     {
    // iter++;
     //Calculate matrix*residual
-        for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
             if(GRID_CELL(grid,x,y).type==FLUID)
             {
@@ -261,8 +261,8 @@ int x,y;
         }
     //Calculate residual norm squared
     float residual_norm_squared=0.0;
-        for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
             if(GRID_CELL(grid,x,y).type==FLUID)
             {
@@ -271,8 +271,8 @@ int x,y;
         }
     //Calculate alpha
     float alpha_denominator=0.0;
-        for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
             if(GRID_CELL(grid,x,y).type==FLUID)
             {
@@ -281,8 +281,8 @@ int x,y;
         }
     float alpha=residual_norm_squared/alpha_denominator;
     //Calculate new pressure and residual
-        for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
             if(GRID_CELL(grid,x,y).type==FLUID)
             {
@@ -292,16 +292,16 @@ int x,y;
         }
     //Check size of residual
     float max_component=0.0;
-        for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
             if(fabs(GRID_CELL(grid,x,y).residual)>max_component)max_component=fabs(GRID_CELL(grid,x,y).residual);
         }
         if(max_component<0.001)break;
     //Calculate beta
     float beta_numerator=0.0;
-        for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
             if(GRID_CELL(grid,x,y).type==FLUID)
             {
@@ -310,8 +310,8 @@ int x,y;
         }
     float beta=beta_numerator/residual_norm_squared;
     //Calculate new conjugate vector
-        for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
             if(GRID_CELL(grid,x,y).type==FLUID)
             {
