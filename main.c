@@ -88,8 +88,7 @@ int i,x,y;
     for(y=0;y<grid->height;y++)
     for(x=0;x<grid->width;x++)
     {
-    //render_cell(screen,grid,x,y);
-        /*
+
         if(GRID_CELL(grid,x,y).type==SOLID)
         {
             for(i=0;i<4;i++)
@@ -100,13 +99,12 @@ int i,x,y;
             put_pixel(screen,x*4+3,y*4+i,80,80,80);
             }
         }
-    */
     }
     for(i=0;i<particles->num_particles;i++)
     {
     float u=0.1*sqrt(particles->particles[i].velocity_x*particles->particles[i].velocity_x+particles->particles[i].velocity_y*particles->particles[i].velocity_y);
         if(u>1)u=1;
-    put_pixel(screen,(int)((particles->particles[i].position_x+0.5)*8.0),(int)((particles->particles[i].position_y+0.5)*8.0),255*u,255*u,255);
+    put_pixel(screen,(int)((particles->particles[i].position_x+0.5)*4.0),(int)((particles->particles[i].position_y+0.5)*4.0),255*u,255*u,255);
     }
 SDL_UnlockSurface(screen);
 SDL_Flip(screen);
@@ -163,7 +161,7 @@ particle_system_populate_rectangle(particles,0,20,20,40);
 particle_system_populate_rectangle(particles,20,30,30,40);
 */
 
-SDL_Surface* screen=SDL_SetVideoMode(grid->width*8,grid->height*8,32,SDL_DOUBLEBUF);
+SDL_Surface* screen=SDL_SetVideoMode(grid->width*4,grid->height*4,32,SDL_DOUBLEBUF);
 
 int milliseconds=SDL_GetTicks();
 int frames=0;
