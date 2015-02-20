@@ -187,9 +187,8 @@ int x,y;
             if(GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))<0)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
         }
         /*Empty cells should have a pressure of zero, because the free surface has constant
-        pressure. Fluid cells have a pressure of zero because that's our initial guess for
-        the iteration*/
-        else GRID_CELL(grid,x,y).pressure=0.0;
+        pressure.*/
+        else if(GRID_CELL(grid,x,y).type==EMPTY) GRID_CELL(grid,x,y).pressure=0.0;
     }
 }
 
@@ -243,8 +242,10 @@ int x,y;
     GRID_CELL(grid,x,y).conjugate=GRID_CELL(grid,x,y).residual;
     }
 //Iterations
+//int iter=0;
     while(1)
     {
+   // iter++;
     //Calculate matrix*residual
         for(x=1;x<grid->width-1;x++)
         for(y=1;y<grid->height-1;y++)
@@ -296,7 +297,7 @@ int x,y;
         {
             if(fabs(GRID_CELL(grid,x,y).residual)>max_component)max_component=fabs(GRID_CELL(grid,x,y).residual);
         }
-        if(max_component<0.001)return;
+        if(max_component<0.001)break;
     //Calculate beta
     float beta_numerator=0.0;
         for(x=1;x<grid->width-1;x++)
@@ -318,6 +319,7 @@ int x,y;
             }
         }
     }
+//printf("%d\n",iter);
 }
 
 void grid_calculate_divergence(grid_t* grid)
