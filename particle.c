@@ -169,6 +169,19 @@ The final weighted average is then the quotient of these*/
 contribution and the sum of the weights*/
     for(i=0;i<num_x_cells;i++)if(grid->weight_sum_x[i]!=0.0)grid->velocity_x[i]/=grid->weight_sum_x[i];
     for(i=0;i<num_y_cells;i++)if(grid->weight_sum_y[i]!=0.0)grid->velocity_y[i]/=grid->weight_sum_y[i];
+
+/*The final task is to extrapolate velocities into neighbouring cells. This is done because particles
+may be moved outside the current fluid region during the advection step- if the velocity there is zero,
+those particles would be artificially slowed*/
+int x,y;
+    for(y=1;y<grid->height-1;y++)
+    for(x=1;x<grid->width-1;x++)
+    {
+        if(GRID_CELL(grid,x,y).type==EMPTY&&GRID_CELL(grid,x,y-1).type==FLUID)
+        {
+        GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=GRID_VELOCITY_Y(grid,x,MINUS_HALF(y));
+        }
+    }
 }
 
 //Advect particles using midpoint method
