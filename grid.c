@@ -11,18 +11,19 @@ grid_t* grid=malloc(sizeof(grid_t));
 grid->width=width;
 grid->height=height;
 //Velocities are stored on cell edges
-grid->velocity_x=malloc((width+1)*height*sizeof(float));
-grid->velocity_y=malloc(width*(height+1)*sizeof(float));
-grid->velocity_x_old=malloc((width+1)*height*sizeof(float));
-grid->velocity_y_old=malloc(width*(height+1)*sizeof(float));
-grid->velocity_delta_x=malloc((width+1)*height*sizeof(float));
-grid->velocity_delta_y=malloc(width*(height+1)*sizeof(float));
-grid->weight_sum_x=malloc((width+1)*height*sizeof(float));
-grid->weight_sum_y=malloc(width*(height+1)*sizeof(float));
+int num_x_components=(grid->width+1)*grid->height;
+int num_y_components=grid->width*(grid->height+1);
+grid->velocity_x=malloc(num_x_components*sizeof(float));
+grid->velocity_y=malloc(num_y_components*sizeof(float));
+grid->velocity_x_old=malloc(num_x_components*sizeof(float));
+grid->velocity_y_old=malloc(num_y_components*sizeof(float));
+grid->velocity_delta_x=malloc(num_x_components*sizeof(float));
+grid->velocity_delta_y=malloc(num_y_components*sizeof(float));
+grid->weight_sum_x=malloc(num_x_components*sizeof(float));
+grid->weight_sum_y=malloc(num_y_components*sizeof(float));
 grid->cells=malloc(width*height*sizeof(grid_cell_t));
 
-/*Velocities and weight sums aren't initialized here, because they're
-re-initialized prior to every step*/
+
 int x,y;
     for(y=0;y<height;y++)
     for(x=0;x<width;x++)
@@ -32,6 +33,20 @@ int x,y;
     its neighbours without risking an out-of-bounds access*/
         if(x==0||y==0||x==width-1||y==height-1)GRID_CELL(grid,x,y).type=SOLID;
         else GRID_CELL(grid,x,y).type=EMPTY;
+    GRID_CELL(grid,x,y).residual=0.0;
+    //Pressure must be initialized as it is not reset between frames
+    GRID_CELL(grid,x,y).pressure=0.0;
+    }
+int i;
+    for(i=0;i<num_x_components;i++)
+    {
+    grid->velocity_x[i]=0.0;
+    grid->weight_sum_x[i]=0.0;
+    }
+    for(i=0;i<num_y_components;i++)
+    {
+    grid->velocity_y[i]=0.0;
+    grid->weight_sum_y[i]=0.0;
     }
 return grid;
 }
@@ -158,6 +173,7 @@ int i;
 
     float flip_x,flip_y;
     grid_get_velocity_delta_at_point(grid,particle->position_x,particle->position_y,&flip_x,&flip_y);
+
     flip_x+=particle->velocity_x;
     flip_y+=particle->velocity_y;
 
@@ -269,6 +285,7 @@ int x,y;
             residual_norm_squared+=GRID_CELL(grid,x,y).residual*GRID_CELL(grid,x,y).residual;
             }
         }
+        if(residual_norm_squared<0.00001)return;
     //Calculate alpha
     float alpha_denominator=0.0;
         for(y=1;y<grid->height-1;y++)
@@ -343,15 +360,13 @@ int x,y;
 
 void grid_project(grid_t* grid,float delta_t)
 {
-int i;
 int x,y;
 //Set boundary conditions
 grid_enforce_boundary(grid);
 //Calculate divergence (and neighbours)
 grid_calculate_divergence(grid);
 //Solve for pressure
-    //for(i=0;i<1000;i++)grid_jacobian_iteration(grid);
-    grid_conjugate_gradient(grid);
+grid_conjugate_gradient(grid);
 //Update velocity
     for(y=1;y<grid->height;y++)
     for(x=1;x<grid->width;x++)
