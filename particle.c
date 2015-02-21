@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<math.h>
+#include <assert.h>
+#include <math.h>
 #include "grid.h"
 #include "particle.h"
 
@@ -21,6 +22,11 @@ system->particles[system->num_particles].position_y=y;
 system->particles[system->num_particles].velocity_x=0.0;
 system->particles[system->num_particles].velocity_y=5.0;
 system->num_particles++;
+}
+
+void particle_system_delete_particle(particle_system_t* system,int particle)
+{
+
 }
 
 void particle_system_populate_rectangle(particle_system_t* system,float x1,float y1,float x2,float y2)
@@ -81,7 +87,7 @@ int i;
     currently in.*/
     unsigned int cell_x=(unsigned int)floor(particle->position_x+0.5);
     unsigned int cell_y=(unsigned int)floor(particle->position_y+0.5);
-
+        assert(cell_x>0&&cell_y>0&&cell_x<grid->width&&cell_y<grid->height);
     /*Ideally, there shouldn't be any particles in solid cells, but if there are, those
     cells shouldn't be changed. Otherwise, mark the current cell as fluid*/
         if(GRID_CELL(grid,cell_x,cell_y).type!=SOLID)GRID_CELL(grid,cell_x,cell_y).type=FLUID;
@@ -103,13 +109,13 @@ int num_x_cells=(grid->width+1)*grid->height;
 int num_y_cells=grid->width*(grid->height+1);
     for(i=0;i<num_x_cells;i++)
     {
-    grid->velocity_x[i]=0.0;
-    grid->weight_sum_x[i]=0.0;
+    grid->velocity_x[i]=0.0f;
+    grid->weight_sum_x[i]=0.0f;
     }
     for(i=0;i<num_y_cells;i++)
     {
-    grid->velocity_y[i]=0.0;
-    grid->weight_sum_y[i]=0.0;
+    grid->velocity_y[i]=0.0f;
+    grid->weight_sum_y[i]=0.0f;
     }
 /*Now loop over particles, and sum contributions to velocity. We also sum the weights, so that for each cell we
 have the sum of the weighted contributions of each particle within it's neighbourhood, and the sum of the weights.
@@ -128,6 +134,7 @@ The final weighted average is then the quotient of these*/
 
     //Do x coordinates
     grid_get_x_velocity_box(particle->position_x,particle->position_y,&x,&y,&disp_x,&disp_y);
+        assert(x>0&&y>0&&x<grid->width&&y<grid->height);
     //Top left corner
     float weight=bilinear_kernel(disp_x,disp_y);
     GRID_VELOCITY_X(grid,x,y)+=particle->velocity_x*weight;
@@ -173,13 +180,74 @@ contribution and the sum of the weights*/
 /*The final task is to extrapolate velocities into neighbouring cells. This is done because particles
 may be moved outside the current fluid region during the advection step- if the velocity there is zero,
 those particles would be artificially slowed*/
+
 int x,y;
-    for(y=1;y<grid->height-1;y++)
+//Iterate over y velocity components not on the edge
+    for(y=PLUS_HALF(1);y<MINUS_HALF(grid->height-1);y++)
     for(x=1;x<grid->width-1;x++)
     {
-        if(GRID_CELL(grid,x,y).type==EMPTY&&GRID_CELL(grid,x,y-1).type==FLUID)
+    //If a velocity component has no weight, it hasn't recieved a velocity value from any particle, so we need to extrapolate
+        if(GRID_WEIGHT_SUM_Y(grid,x,y)==0.0f)
         {
-        GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=GRID_VELOCITY_Y(grid,x,MINUS_HALF(y));
+        float neighbours=0.0;
+        float total=0.0;
+        //Check neighbours to see if they have recieved a velocity value
+            if(GRID_WEIGHT_SUM_Y(grid,x+1,y)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_Y(grid,x+1,y);
+            }
+            if(GRID_WEIGHT_SUM_Y(grid,x-1,y)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_Y(grid,x-1,y);
+            }
+            if(GRID_WEIGHT_SUM_Y(grid,x,y+1)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_Y(grid,x,y+1);
+            }
+            if(GRID_WEIGHT_SUM_Y(grid,x,y-1)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_Y(grid,x,y-1);
+            }
+        //Average the values
+            if(neighbours!=0.0)GRID_VELOCITY_Y(grid,x,y)=total/neighbours;
+        }
+    }
+//Same code for x velocities- TODO: reduce repetition
+    for(y=1;y<grid->height-1;y++)
+    for(x=PLUS_HALF(1);x<MINUS_HALF(grid->width-1);x++)
+    {
+    //If a velocity component has no weight, it hasn't recieved a velocity value from any particle, so we need to extrapolate
+        if(GRID_WEIGHT_SUM_X(grid,x,y)==0.0f)
+        {
+        float neighbours=0.0;
+        float total=0.0;
+        //Check neighbours to see if they have recieved a velocity value
+            if(GRID_WEIGHT_SUM_X(grid,x+1,y)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_X(grid,x+1,y);
+            }
+            if(GRID_WEIGHT_SUM_X(grid,x-1,y)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_X(grid,x-1,y);
+            }
+            if(GRID_WEIGHT_SUM_X(grid,x,y+1)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_X(grid,x,y+1);
+            }
+            if(GRID_WEIGHT_SUM_X(grid,x,y-1)!=0.0f)
+            {
+            neighbours++;
+            total+=GRID_VELOCITY_X(grid,x,y-1);
+            }
+        //Average the values
+            if(neighbours!=0.0)GRID_VELOCITY_X(grid,x,y)=total/neighbours;
         }
     }
 }
