@@ -27,5 +27,5 @@ float bilinear_kernel(float x,float y);
 void particle_system_mark_grid_cells(particle_system_t* particle_system,struct grid_s* grid);
 void particle_system_transfer_to_grid(particle_system_t* particle_system,struct grid_s* grid);
 void particle_system_advect(particle_system_t* particle_system,struct grid_s* grid,float delta_t);
-
+void particle_system_remove_invalid_particles(particle_system_t* particle_system,struct grid_s* grid);
 #endif // PARTICLE_H_INCLUDED

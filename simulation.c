@@ -27,6 +27,10 @@ grid_calculate_velocity_delta(simulation->grid);
 grid_transfer_to_particle_system(simulation->grid,simulation->particle_system);
 //Advect particles
 particle_system_advect(simulation->particle_system,simulation->grid,delta_t);
+//Remove any particles that are in invalid postions
+particle_system_remove_invalid_particles(simulation->particle_system,simulation->grid);
 }
+
+//void simulation_set_cell_type()
 
 void simulation_free(simulation_t* simulation);

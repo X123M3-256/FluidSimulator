@@ -24,9 +24,12 @@ system->particles[system->num_particles].velocity_y=5.0;
 system->num_particles++;
 }
 
+/*To delete a particle, we swap it with the particle currently positioned at the end of
+the array, and then reduce the particle count.*/
 void particle_system_delete_particle(particle_system_t* system,int particle)
 {
-
+system->num_particles--;
+system->particles[particle]=system->particles[system->num_particles];
 }
 
 void particle_system_populate_rectangle(particle_system_t* system,float x1,float y1,float x2,float y2)
@@ -248,6 +251,35 @@ int x,y;
             }
         //Average the values
             if(neighbours!=0.0)GRID_VELOCITY_X(grid,x,y)=total/neighbours;
+        }
+    }
+}
+
+
+/*Remove particles that are outside the domain or embedded in solid cells.
+This can happen due to numerical error in the advection step, particularly
+when very high pressures are involved. Strictly speaking, it would probably
+be better to move such particles back inside the fluid, but this is easier
+said than done, and the number of particles ending up outside the domain is
+small enough.*/
+void particle_system_remove_invalid_particles(particle_system_t* particle_system,grid_t* grid)
+{
+int i;
+    for(i=0;i<particle_system->num_particles;i++)
+    {
+    particle_t* particle=particle_system->particles+i;
+    //We compute the cell in which the particle lies in the same manner as for particle_system_mark_grid_cells
+    unsigned int cell_x=(unsigned int)floor(particle->position_x+0.5);
+    unsigned int cell_y=(unsigned int)floor(particle->position_y+0.5);
+    //Now, check if the cell is out of bounds or solid
+        if(cell_x<0||cell_y<0&&cell_x>=grid->width&&cell_y>=grid->height||GRID_CELL(grid,cell_x,cell_y).type==SOLID)
+        {
+        //Delete the particle
+        particle_system_delete_particle(particle_system,i);
+        /*Since the current particle has been deleted, there is a
+        different particle at this location, and that also needs to
+        be checked, so for the next loop iteration, use the same i*/
+        //i--;
         }
     }
 }
