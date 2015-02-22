@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include "simulation.h"
 
+
+float rand_float(float min,float max)
+{
+float rand_normal=(float)rand()/(float)(RAND_MAX);
+return min+(max-min)*rand_normal;
+}
+
 simulation_t* simulation_new(unsigned int width,unsigned int height,unsigned int max_particles)
 {
 simulation_t* simulation=malloc(sizeof(simulation_t));
@@ -43,10 +50,10 @@ GRID_CELL(simulation->grid,x,y).type=type;;
     if(type==FLUID)
     {
     float fx=(float)x,fy=(float)y;
-    particle_system_add_particle(simulation->particle_system,fx-0.25,fy-0.25);
-    particle_system_add_particle(simulation->particle_system,fx+0.25,fy-0.25);
-    particle_system_add_particle(simulation->particle_system,fx-0.25,fy+0.25);
-    particle_system_add_particle(simulation->particle_system,fx+0.25,fy+0.25);
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-0.5,0.0),fy+rand_float(-0.5,0.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(0.0,0.5),fy+rand_float(-0.5,0.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-0.5,0.0),fy+rand_float(0.0,0.5));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(0.0,0.5),fy+rand_float(0.0,0.5));
     }
 }
 
