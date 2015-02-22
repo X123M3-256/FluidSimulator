@@ -185,13 +185,12 @@ int x,y;
     {
         if(GRID_CELL(grid,x,y).type==SOLID)
         {
-        /*Enforce boundary conditions on solid cells. All velocity components bordering this cell
-        must point out of the cell (technically they should be zero, but this causes fluid to stick
-        to the walls*/
-            if(x!=0&&GRID_CELL(grid,x-1,y).type==FLUID&&GRID_VELOCITY_X(grid,MINUS_HALF(x),y)>0.0)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)=0.0;
-            if(x!=grid->width-1&&GRID_CELL(grid,x+1,y).type==FLUID&&GRID_VELOCITY_X(grid,PLUS_HALF(x),y)<0.0)GRID_VELOCITY_X(grid,PLUS_HALF(x),y)=0.0;
-            if(y!=0&&GRID_CELL(grid,x,y-1).type==FLUID&&GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))>0.0)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))=0.0;
-            if(y!=grid->height-1&&GRID_CELL(grid,x,y+1).type==FLUID&&GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))<0.0)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
+        /*Enforce boundary conditions on solid cells. All velocity components between fluid and
+        solid cells must be zero*/
+            if(x!=0&&GRID_CELL(grid,x-1,y).type==FLUID)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)=0.0;
+            if(x!=grid->width-1&&GRID_CELL(grid,x+1,y).type==FLUID)GRID_VELOCITY_X(grid,PLUS_HALF(x),y)=0.0;
+            if(y!=0&&GRID_CELL(grid,x,y-1).type==FLUID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))=0.0;
+            if(y!=grid->height-1&&GRID_CELL(grid,x,y+1).type==FLUID)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
         }
         /*Empty cells should have a pressure of zero, because the free surface has constant
         pressure.*/
@@ -335,7 +334,7 @@ int x,y;
         {
         GRID_CELL(grid,x,y).neighbours=0.0;
         GRID_CELL(grid,x,y).divergence=(GRID_VELOCITY_X(grid,PLUS_HALF(x),y)-GRID_VELOCITY_X(grid,MINUS_HALF(x),y))+(GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))-GRID_VELOCITY_Y(grid,x,MINUS_HALF(y)));
-        //Solid cells have zero velocity in or out
+
             if(GRID_CELL(grid,x+1,y).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
             if(GRID_CELL(grid,x-1,y).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
             if(GRID_CELL(grid,x,y+1).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
