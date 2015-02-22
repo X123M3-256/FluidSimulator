@@ -137,7 +137,7 @@ The final weighted average is then the quotient of these*/
 
     //Do x coordinates
     grid_get_x_velocity_box(particle->position_x,particle->position_y,&x,&y,&disp_x,&disp_y);
-        assert(x>0&&y>0&&x<grid->width&&y<grid->height);
+
     //Top left corner
     float weight=bilinear_kernel(disp_x,disp_y);
     GRID_VELOCITY_X(grid,x,y)+=particle->velocity_x*weight;
@@ -269,8 +269,8 @@ int i;
     {
     particle_t* particle=particle_system->particles+i;
     //We compute the cell in which the particle lies in the same manner as for particle_system_mark_grid_cells
-    unsigned int cell_x=(unsigned int)floor(particle->position_x+0.5);
-    unsigned int cell_y=(unsigned int)floor(particle->position_y+0.5);
+    int cell_x=(int)floor(particle->position_x+0.5);
+    int cell_y=(int)floor(particle->position_y+0.5);
     //Now, check if the cell is out of bounds or solid
         if(cell_x<1||cell_y<1||cell_x>=grid->width||cell_y>=grid->height||GRID_CELL(grid,cell_x,cell_y).type==SOLID)
         {
