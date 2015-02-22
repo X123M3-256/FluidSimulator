@@ -272,14 +272,14 @@ int i;
     unsigned int cell_x=(unsigned int)floor(particle->position_x+0.5);
     unsigned int cell_y=(unsigned int)floor(particle->position_y+0.5);
     //Now, check if the cell is out of bounds or solid
-        if(cell_x<0||cell_y<0&&cell_x>=grid->width&&cell_y>=grid->height||GRID_CELL(grid,cell_x,cell_y).type==SOLID)
+        if(cell_x<1||cell_y<1||cell_x>=grid->width||cell_y>=grid->height||GRID_CELL(grid,cell_x,cell_y).type==SOLID)
         {
         //Delete the particle
         particle_system_delete_particle(particle_system,i);
         /*Since the current particle has been deleted, there is a
         different particle at this location, and that also needs to
         be checked, so for the next loop iteration, use the same i*/
-        //i--;
+        i--;
         }
     }
 }
