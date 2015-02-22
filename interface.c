@@ -10,6 +10,7 @@ interface->simulation=simulation;
 interface->mouse_x=0.0;
 interface->mouse_y=0.0;
 interface->mouse_pressed=0;
+interface->mode=DRAW_WATER;
 return interface;
 }
 
@@ -31,7 +32,14 @@ SDL_Event event;
         }
         else if(event.type==SDL_MOUSEBUTTONUP)
         {
-        particle_system_populate_rectangle(interface->simulation->particle_system,interface->drag_x,interface->drag_y,interface->mouse_x,interface->mouse_y);
+
+            if(interface->mode==DRAW_WATER)particle_system_populate_rectangle(interface->simulation->particle_system,interface->drag_x,interface->drag_y,interface->mouse_x,interface->mouse_y);
+            else if(interface->mode==DRAW_SOLID)grid_set_rectangle(interface->simulation->grid,SOLID,interface->drag_x,interface->drag_y,interface->mouse_x,interface->mouse_y);
+        }
+        else if(event.type=SDL_KEYDOWN)
+        {
+            if(event.key.keysym.sym==SDLK_w)interface->mode=DRAW_WATER;
+            else if(event.key.keysym.sym==SDLK_s)interface->mode=DRAW_SOLID;
         }
     }
 }

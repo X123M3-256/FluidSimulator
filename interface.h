@@ -2,6 +2,12 @@
 #define INTERFACE_H_INCLUDED
 #include "simulation.h"
 
+typedef enum
+{
+DRAW_WATER,
+DRAW_SOLID
+}interface_mode_t;
+
 typedef struct
 {
 simulation_t* simulation;
@@ -10,6 +16,7 @@ float mouse_y;
 float drag_x;
 float drag_y;
 unsigned int mouse_pressed;
+interface_mode_t mode;
 }interface_t;
 
 interface_t* interface_new(simulation_t* simulation);
