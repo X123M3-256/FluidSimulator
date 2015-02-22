@@ -33,7 +33,7 @@ particle_system_transfer_to_grid(simulation->particle_system,simulation->grid);
 
 void simulation_set_cell(simulation_t* simulation,grid_cell_type_t type,unsigned int x,unsigned int y)
 {
-    if(x<1||y<1||x>=simulation->grid->width-1||y>=simulation->grid->height)return;
+    if(x<1||y<1||x>=simulation->grid->width-1||y>=simulation->grid->height-1)return;
 
 //Nothing to be done if the target cell is already the right type
     if(GRID_CELL(simulation->grid,x,y).type==type)return;
