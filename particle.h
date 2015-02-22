@@ -20,7 +20,7 @@ unsigned int max_particles;
 
 particle_system_t* particle_system_new(int max_particles);
 void particle_system_add_particle(particle_system_t* system,float x,float y);
-void particle_system_populate_rectangle(particle_system_t* system,float x1,float y1,float x2,float y2);
+void particle_system_delete_particle(particle_system_t* system,int particle);
 
 float bilinear_kernel(float x,float y);
 

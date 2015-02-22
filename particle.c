@@ -32,24 +32,6 @@ system->num_particles--;
 system->particles[particle]=system->particles[system->num_particles];
 }
 
-void particle_system_populate_rectangle(particle_system_t* system,float x1,float y1,float x2,float y2)
-{
-unsigned int num_x=(unsigned int)(x2-x1)*2;
-unsigned int num_y=(unsigned int)(y2-y1)*2;
-int i,j;
-float x=x1,y=y1;
-    for(i=0;i<num_y;i++)
-    {
-    x=x1;
-        for(j=0;j<num_x;j++)
-        {
-        particle_system_add_particle(system,x,y);
-        x+=0.5;
-        }
-    y+=0.5;
-    }
-}
-
 
 
 

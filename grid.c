@@ -51,15 +51,6 @@ int i;
 return grid;
 }
 
-void grid_set_rectangle(grid_t* grid,grid_cell_type_t type,unsigned int x1,unsigned int y1,unsigned int x2,unsigned int y2)
-{
-int x,y;
-    for(y=y1;y<=y2;y++)
-    for(x=x1;x<=x2;x++)
-    {
-    GRID_CELL(grid,x,y).type=type;
-    }
-}
 
 /*Here we save a copy of the current velocities. This is done because we need to compute
 the difference between the old and new velocities when we update the particles at the end

@@ -31,6 +31,33 @@ particle_system_advect(simulation->particle_system,simulation->grid,delta_t);
 particle_system_remove_invalid_particles(simulation->particle_system,simulation->grid);
 }
 
-//void simulation_set_cell_type()
+void simulation_set_cell(simulation_t* simulation,grid_cell_type_t type,unsigned int x,unsigned int y)
+{
+    if(x<1||y<1||x>=simulation->grid->width-1||y>=simulation->grid->height)return;
+
+//Nothing to be done if the target cell is already the right type
+    if(GRID_CELL(simulation->grid,x,y).type==type)return;
+//Assign type
+GRID_CELL(simulation->grid,x,y).type=type;;
+//If the new type is fluid, some particles need to be added as well
+    if(type==FLUID)
+    {
+    float fx=(float)x,fy=(float)y;
+    particle_system_add_particle(simulation->particle_system,fx-0.25,fy-0.25);
+    particle_system_add_particle(simulation->particle_system,fx+0.25,fy-0.25);
+    particle_system_add_particle(simulation->particle_system,fx-0.25,fy+0.25);
+    particle_system_add_particle(simulation->particle_system,fx+0.25,fy+0.25);
+    }
+}
+
+void simulation_set_rect(simulation_t* simulation,grid_cell_type_t type,unsigned int x1,unsigned int y1,unsigned int x2,unsigned int y2)
+{
+int x,y;
+    for(y=y1;y<=y2;y++)
+    for(x=x1;x<=x2;x++)
+    {
+    simulation_set_cell(simulation,type,x,y);
+    }
+}
 
 void simulation_free(simulation_t* simulation);
