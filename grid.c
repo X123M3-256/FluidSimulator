@@ -188,10 +188,10 @@ int x,y;
         /*Enforce boundary conditions on solid cells. All velocity components bordering this cell
         must point out of the cell (technically they should be zero, but this causes fluid to stick
         to the walls*/
-            if(GRID_VELOCITY_X(grid,MINUS_HALF(x),y)>0)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)=0.0;
-            if(GRID_VELOCITY_X(grid,PLUS_HALF(x),y)<0)GRID_VELOCITY_X(grid,PLUS_HALF(x),y)=0.0;
-            if(GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))>0)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))=0.0;
-            if(GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))<0)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
+            if(x!=0&&GRID_CELL(grid,x-1,y).type==FLUID&&GRID_VELOCITY_X(grid,MINUS_HALF(x),y)>0.0)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)=0.0;
+            if(x!=grid->width-1&&GRID_CELL(grid,x+1,y).type==FLUID&&GRID_VELOCITY_X(grid,PLUS_HALF(x),y)<0.0)GRID_VELOCITY_X(grid,PLUS_HALF(x),y)=0.0;
+            if(y!=0&&GRID_CELL(grid,x,y-1).type==FLUID&&GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))>0.0)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))=0.0;
+            if(y!=grid->height-1&&GRID_CELL(grid,x,y+1).type==FLUID&&GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))<0.0)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
         }
         /*Empty cells should have a pressure of zero, because the free surface has constant
         pressure.*/
