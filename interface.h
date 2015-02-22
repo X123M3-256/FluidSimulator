@@ -2,6 +2,8 @@
 #define INTERFACE_H_INCLUDED
 #include "simulation.h"
 
+#define CELL_SCREEN_SIZE 8
+
 typedef enum
 {
 DRAW_WATER,

@@ -23,8 +23,8 @@ SDL_Event event;
     {
         if(event.type==SDL_MOUSEMOTION)
         {
-        interface->mouse_x=(float)event.motion.x/4.0;
-        interface->mouse_y=(float)event.motion.y/4.0;
+        interface->mouse_x=(float)event.motion.x/CELL_SCREEN_SIZE;
+        interface->mouse_y=(float)event.motion.y/CELL_SCREEN_SIZE;
         }
         else if(event.type==SDL_MOUSEBUTTONDOWN)
         {
@@ -66,36 +66,38 @@ SDL_FillRect(screen,&all,0);
 SDL_LockSurface(screen);
 //Render simulation
 int i,x,y;
+
     for(y=0;y<interface->simulation->grid->height;y++)
     for(x=0;x<interface->simulation->grid->width;x++)
     {
         if(GRID_CELL(interface->simulation->grid,x,y).type==SOLID)
         {
 
-            for(i=0;i<4;i++)
+            for(i=0;i<CELL_SCREEN_SIZE;i++)
             {
-            put_pixel(screen,x*4+i,y*4,80,80,80);
-            put_pixel(screen,x*4+i,y*4+3,80,80,80);
-            put_pixel(screen,x*4,y*4+i,80,80,80);
-            put_pixel(screen,x*4+3,y*4+i,80,80,80);
+            put_pixel(screen,x*CELL_SCREEN_SIZE+i,y*CELL_SCREEN_SIZE,80,80,80);
+            put_pixel(screen,x*CELL_SCREEN_SIZE+i,(y+1)*CELL_SCREEN_SIZE-1,80,80,80);
+            put_pixel(screen,x*CELL_SCREEN_SIZE,y*CELL_SCREEN_SIZE+i,80,80,80);
+            put_pixel(screen,(x+1)*CELL_SCREEN_SIZE-1,y*CELL_SCREEN_SIZE+i,80,80,80);
             }
         }
     }
+
     for(i=0;i<interface->simulation->particle_system->num_particles;i++)
     {
     particle_t* particle=interface->simulation->particle_system->particles+i;
 
     float u=0.1*sqrt(particle->velocity_x*particle->velocity_x+particle->velocity_y*particle->velocity_y);
         if(u>=1.0)u=1.0;
-    put_pixel(screen,(int)((particle->position_x+0.5)*4.0),(int)((particle->position_y+0.5)*4.0),(int)(255.0*u),(int)(255.0*u),255);
+    put_pixel(screen,(int)((particle->position_x+0.5)*CELL_SCREEN_SIZE),(int)((particle->position_y+0.5)*CELL_SCREEN_SIZE),(int)(255.0*u),(int)(255.0*u),255);
     }
 //Render drag box
     if(interface->mouse_pressed)
     {
-    int x1=(int)((interface->drag_x+0.5)*4.0);
-    int y1=(int)((interface->drag_y+0.5)*4.0);
-    int w=(int)((interface->mouse_x-interface->drag_x)*4.0);
-    int h=(int)((interface->mouse_y-interface->drag_y)*4.0);
+    int x1=(int)((interface->drag_x+0.5)*CELL_SCREEN_SIZE);
+    int y1=(int)((interface->drag_y+0.5)*CELL_SCREEN_SIZE);
+    int w=(int)((interface->mouse_x-interface->drag_x)*CELL_SCREEN_SIZE);
+    int h=(int)((interface->mouse_y-interface->drag_y)*CELL_SCREEN_SIZE);
         for(y=0;y<h;y++)
         for(x=0;x<w;x++)
         {
@@ -105,9 +107,6 @@ int i,x,y;
         put_pixel(screen,x1+w,y1+y,255,255,255);
         }
     }
-
-
-
 SDL_UnlockSurface(screen);
 }
 
