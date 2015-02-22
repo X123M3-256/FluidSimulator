@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <SDL/SDL.h>
 #include "interface.h"
 
@@ -29,14 +30,15 @@ SDL_Event event;
         {
         interface->drag_x=interface->mouse_x;
         interface->drag_y=interface->mouse_y;
+        interface->mouse_pressed=1;
         }
         else if(event.type==SDL_MOUSEBUTTONUP)
         {
-
+        interface->mouse_pressed=0;
             if(interface->mode==DRAW_WATER)particle_system_populate_rectangle(interface->simulation->particle_system,interface->drag_x,interface->drag_y,interface->mouse_x,interface->mouse_y);
             else if(interface->mode==DRAW_SOLID)grid_set_rectangle(interface->simulation->grid,SOLID,interface->drag_x,interface->drag_y,interface->mouse_x,interface->mouse_y);
         }
-        else if(event.type=SDL_KEYDOWN)
+        else if(event.type==SDL_KEYDOWN)
         {
             if(event.key.keysym.sym==SDLK_w)interface->mode=DRAW_WATER;
             else if(event.key.keysym.sym==SDLK_s)interface->mode=DRAW_SOLID;
@@ -62,7 +64,7 @@ all.w=screen->w;
 all.h=screen->h;
 SDL_FillRect(screen,&all,0);
 SDL_LockSurface(screen);
-
+//Render simulation
 int i,x,y;
     for(y=0;y<interface->simulation->grid->height;y++)
     for(x=0;x<interface->simulation->grid->width;x++)
@@ -87,6 +89,25 @@ int i,x,y;
         if(u>=1.0)u=1.0;
     put_pixel(screen,(int)((particle->position_x+0.5)*4.0),(int)((particle->position_y+0.5)*4.0),(int)(255.0*u),(int)(255.0*u),255);
     }
+//Render drag box
+    if(interface->mouse_pressed)
+    {
+    int x1=(int)((interface->drag_x+0.5)*4.0);
+    int y1=(int)((interface->drag_y+0.5)*4.0);
+    int w=(int)((interface->mouse_x-interface->drag_x)*4.0);
+    int h=(int)((interface->mouse_y-interface->drag_y)*4.0);
+        for(y=0;y<h;y++)
+        for(x=0;x<w;x++)
+        {
+        put_pixel(screen,x1+x,y1,255,255,255);
+        put_pixel(screen,x1+x,y1+h,255,255,255);
+        put_pixel(screen,x1,y1+y,255,255,255);
+        put_pixel(screen,x1+w,y1+y,255,255,255);
+        }
+    }
+
+
+
 SDL_UnlockSurface(screen);
 }
 
