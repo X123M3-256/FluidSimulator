@@ -7,7 +7,8 @@
 typedef enum
 {
 DRAW_WATER,
-DRAW_SOLID
+DRAW_SOLID,
+REMOVE
 }interface_mode_t;
 
 typedef struct
