@@ -20,7 +20,7 @@ void particle_system_add_particle(particle_system_t* system,float x,float y)
 system->particles[system->num_particles].position_x=x;
 system->particles[system->num_particles].position_y=y;
 system->particles[system->num_particles].velocity_x=0.0;
-system->particles[system->num_particles].velocity_y=5.0;
+system->particles[system->num_particles].velocity_y=0.0;
 system->num_particles++;
 }
 
