@@ -43,9 +43,9 @@ void simulation_set_cell(simulation_t* simulation,grid_cell_type_t type,unsigned
     if(x<1||y<1||x>=simulation->grid->width-1||y>=simulation->grid->height-1)return;
 
 //Nothing to be done if the target cell is already the right type
-    if(GRID_CELL(simulation->grid,x,y).type==type)return;
+    if(GRID_CELL_TYPE(simulation->grid,x,y)==type)return;
 //Assign type
-GRID_CELL(simulation->grid,x,y).type=type;;
+GRID_CELL_SET_TYPE(simulation->grid,x,y,type);
 //If the new type is fluid, some particles need to be added as well
     if(type==FLUID)
     {

@@ -84,7 +84,7 @@ might need to be considered if the cell below the current one is fluid.*/
     for(x=1;x<grid->width-1;x++)
     {
     //If this cell, or the one below it, is a fluid then we need to apply gravity to the velocity on the bottom edge
-        if(GRID_CELL(grid,x,y).type==FLUID||GRID_CELL(grid,x,y+1).type==FLUID)
+        if(GRID_CELL_TYPE(grid,x,y)==FLUID||GRID_CELL_TYPE(grid,x,y+1)==FLUID)
         {
         GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))+=9.81*delta_t;
         }
@@ -183,18 +183,18 @@ int x,y;
     for(y=0;y<grid->height;y++)
     for(x=0;x<grid->width;x++)
     {
-        if(GRID_CELL(grid,x,y).type==SOLID)
+        if(GRID_CELL_TYPE(grid,x,y)==SOLID)
         {
         /*Enforce boundary conditions on solid cells. All velocity components between fluid and
         solid cells must be zero*/
-            if(x!=0&&GRID_CELL(grid,x-1,y).type==FLUID)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)=0.0;
-            if(x!=grid->width-1&&GRID_CELL(grid,x+1,y).type==FLUID)GRID_VELOCITY_X(grid,PLUS_HALF(x),y)=0.0;
-            if(y!=0&&GRID_CELL(grid,x,y-1).type==FLUID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))=0.0;
-            if(y!=grid->height-1&&GRID_CELL(grid,x,y+1).type==FLUID)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
+            if(x!=0&&GRID_CELL_TYPE(grid,x-1,y)==FLUID)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)=0.0;
+            if(x!=grid->width-1&&GRID_CELL_TYPE(grid,x+1,y)==FLUID)GRID_VELOCITY_X(grid,PLUS_HALF(x),y)=0.0;
+            if(y!=0&&GRID_CELL_TYPE(grid,x,y-1)==FLUID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))=0.0;
+            if(y!=grid->height-1&&GRID_CELL_TYPE(grid,x,y+1)==FLUID)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
         }
         /*Empty cells should have a pressure of zero, because the free surface has constant
         pressure.*/
-        else if(GRID_CELL(grid,x,y).type==EMPTY) GRID_CELL(grid,x,y).pressure=0.0;
+        else if(GRID_CELL_TYPE(grid,x,y)==EMPTY) GRID_CELL(grid,x,y).pressure=0.0;
     }
 }
 
@@ -231,7 +231,7 @@ float residual_norm_squared=0.0;
         for(y=1;y<grid->height-1;y++)
         for(x=1;x<grid->width-1;x++)
         {
-            if(GRID_CELL(grid,x,y).type==FLUID)
+            if(GRID_CELL_TYPE(grid,x,y)==FLUID)
             {
             residual_norm_squared+=GRID_CELL(grid,x,y).residual*GRID_CELL(grid,x,y).residual;
             }
@@ -246,7 +246,7 @@ int x,y;
     for(y=1;y<grid->height-1;y++)
     for(x=1;x<grid->width-1;x++)
     {
-        if(GRID_CELL(grid,x,y).type==FLUID)
+        if(GRID_CELL_TYPE(grid,x,y)==FLUID)
         {
         float matrix_pressure=-GRID_CELL(grid,x,y).neighbours*GRID_CELL(grid,x,y).pressure;
         matrix_pressure+=GRID_CELL(grid,x+1,y).pressure;
@@ -275,7 +275,7 @@ float residual_norm_squared=grid_calculate_residual_norm_squared(grid);
         for(y=1;y<grid->height-1;y++)
         for(x=1;x<grid->width-1;x++)
         {
-            if(GRID_CELL(grid,x,y).type==FLUID)
+            if(GRID_CELL_TYPE(grid,x,y)==FLUID)
             {
             GRID_CELL(grid,x,y).matrix_conjugate=-GRID_CELL(grid,x,y).neighbours*GRID_CELL(grid,x,y).conjugate;
             GRID_CELL(grid,x,y).matrix_conjugate+=GRID_CELL(grid,x+1,y).conjugate;
@@ -289,7 +289,7 @@ float residual_norm_squared=grid_calculate_residual_norm_squared(grid);
         for(y=1;y<grid->height-1;y++)
         for(x=1;x<grid->width-1;x++)
         {
-            if(GRID_CELL(grid,x,y).type==FLUID)
+            if(GRID_CELL_TYPE(grid,x,y)==FLUID)
             {
             alpha_denominator+=GRID_CELL(grid,x,y).conjugate*GRID_CELL(grid,x,y).matrix_conjugate;
             }
@@ -299,7 +299,7 @@ float residual_norm_squared=grid_calculate_residual_norm_squared(grid);
         for(y=1;y<grid->height-1;y++)
         for(x=1;x<grid->width-1;x++)
         {
-            if(GRID_CELL(grid,x,y).type==FLUID)
+            if(GRID_CELL_TYPE(grid,x,y)==FLUID)
             {
             GRID_CELL(grid,x,y).pressure+=alpha*GRID_CELL(grid,x,y).conjugate;
             GRID_CELL(grid,x,y).residual-=alpha*GRID_CELL(grid,x,y).matrix_conjugate;
@@ -315,7 +315,7 @@ float residual_norm_squared=grid_calculate_residual_norm_squared(grid);
         for(y=1;y<grid->height-1;y++)
         for(x=1;x<grid->width-1;x++)
         {
-            if(GRID_CELL(grid,x,y).type==FLUID)
+            if(GRID_CELL_TYPE(grid,x,y)==FLUID)
             {
             GRID_CELL(grid,x,y).conjugate=GRID_CELL(grid,x,y).residual+beta*GRID_CELL(grid,x,y).conjugate;
             }
@@ -330,15 +330,15 @@ int x,y;
     for(y=1;y<grid->height-1;y++)
     for(x=1;x<grid->width-1;x++)
     {
-        if(GRID_CELL(grid,x,y).type==FLUID)
+        if(GRID_CELL_TYPE(grid,x,y)==FLUID)
         {
         GRID_CELL(grid,x,y).neighbours=0.0;
         GRID_CELL(grid,x,y).divergence=(GRID_VELOCITY_X(grid,PLUS_HALF(x),y)-GRID_VELOCITY_X(grid,MINUS_HALF(x),y))+(GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))-GRID_VELOCITY_Y(grid,x,MINUS_HALF(y)));
 
-            if(GRID_CELL(grid,x+1,y).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
-            if(GRID_CELL(grid,x-1,y).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
-            if(GRID_CELL(grid,x,y+1).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
-            if(GRID_CELL(grid,x,y-1).type!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+            if(GRID_CELL_TYPE(grid,x+1,y)!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+            if(GRID_CELL_TYPE(grid,x-1,y)!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+            if(GRID_CELL_TYPE(grid,x,y+1)!=SOLID)GRID_CELL(grid,x,y).neighbours++;
+            if(GRID_CELL_TYPE(grid,x,y-1)!=SOLID)GRID_CELL(grid,x,y).neighbours++;
         }
     }
 }
@@ -356,12 +356,12 @@ grid_conjugate_gradient(grid);
     for(y=1;y<grid->height;y++)
     for(x=1;x<grid->width;x++)
     {
-        if(GRID_CELL(grid,x,y).type!=SOLID)
+        if(GRID_CELL_TYPE(grid,x,y)!=SOLID)
         {
             //Apply X pressure
-            if(GRID_CELL(grid,x-1,y).type!=SOLID)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)-=(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x-1,y).pressure);
+            if(GRID_CELL_TYPE(grid,x-1,y)!=SOLID)GRID_VELOCITY_X(grid,MINUS_HALF(x),y)-=(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x-1,y).pressure);
             //Apply Y pressure
-            if(GRID_CELL(grid,x,y-1).type!=SOLID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))-=(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x,y-1).pressure);
+            if(GRID_CELL_TYPE(grid,x,y-1)!=SOLID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))-=(GRID_CELL(grid,x,y).pressure-GRID_CELL(grid,x,y-1).pressure);
         }
     }
 }

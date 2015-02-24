@@ -55,7 +55,7 @@ int x,y;
     for(y=0;y<grid->height;y++)
     for(x=0;x<grid->width;x++)
     {
-        if(GRID_CELL(grid,x,y).type==FLUID)GRID_CELL(grid,x,y).type=EMPTY;
+        if(GRID_CELL_TYPE(grid,x,y)==FLUID)GRID_CELL_SET_TYPE(grid,x,y,EMPTY);
     }
 /*Now, we iterate over each particle, compute which cell it is in and then mark that cell as solid*/
 int i;
@@ -75,7 +75,7 @@ int i;
         assert(cell_x>0&&cell_y>0&&cell_x<grid->width&&cell_y<grid->height);
     /*Ideally, there shouldn't be any particles in solid cells, but if there are, those
     cells shouldn't be changed. Otherwise, mark the current cell as fluid*/
-        if(GRID_CELL(grid,cell_x,cell_y).type!=SOLID)GRID_CELL(grid,cell_x,cell_y).type=FLUID;
+        if(GRID_CELL_TYPE(grid,cell_x,cell_y)!=SOLID)GRID_CELL_SET_TYPE(grid,cell_x,cell_y,FLUID);
     }
 }
 
@@ -254,7 +254,7 @@ int i;
     int cell_x=(int)floor(particle->position_x+0.5);
     int cell_y=(int)floor(particle->position_y+0.5);
     //Now, check if the cell is out of bounds or solid
-        if(cell_x<1||cell_y<1||cell_x>=grid->width||cell_y>=grid->height||GRID_CELL(grid,cell_x,cell_y).type==SOLID)
+        if(cell_x<1||cell_y<1||cell_x>=grid->width||cell_y>=grid->height||GRID_CELL_TYPE(grid,cell_x,cell_y)==SOLID)
         {
         //Delete the particle
         particle_system_delete_particle(particle_system,i);

@@ -4,9 +4,13 @@
 
 typedef enum
 {
-SOLID,
-FLUID,
-EMPTY
+SOLID=0x1,
+FLUID=0x2,
+EMPTY=0x3,
+INFLOW=0x10,
+OUTFLOW=0x20,
+CELL_FLAGS_MASK=0xF0,
+CELL_TYPE_MASK=0x0F
 }grid_cell_type_t;
 
 typedef struct
@@ -47,6 +51,9 @@ when we are referencing values stored on the edges of cells and when we are not.
 /*For efficiency, the grid is stored as a one-dimensional array, so these
 macros are provided for referencing*/
 #define GRID_CELL(grid,x,y) ((grid)->cells[(x)+(grid)->width*(y)])
+#define GRID_CELL_TYPE(grid,x,y) (GRID_CELL(grid,x,y).type&CELL_TYPE_MASK)
+#define GRID_CELL_SET_TYPE(grid,x,y,t) (GRID_CELL(grid,x,y).type=(t)|(GRID_CELL(grid,x,y).type&CELL_FLAGS_MASK))
+#define GRID_CELL_FLAGS(grid,x,y) (GRID_CELL(grid,x,y).type&CELL_FLAGS_MASK)
 #define GRID_VELOCITY_X(grid,x,y) ((grid)->velocity_x[(x)+(grid)->width*(y)])
 #define GRID_VELOCITY_Y(grid,x,y) ((grid)->velocity_y[(x)+(grid)->width*(y)])
 #define GRID_PREV_VELOCITY_X(grid,x,y) ((grid)->velocity_x_old[(x)+(grid)->width*(y)])
