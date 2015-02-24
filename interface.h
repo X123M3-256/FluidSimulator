@@ -8,6 +8,8 @@ typedef enum
 {
 DRAW_WATER,
 DRAW_SOLID,
+DRAW_INFLOW,
+DRAW_OUTFLOW,
 REMOVE
 }interface_mode_t;
 
