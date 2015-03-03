@@ -38,6 +38,8 @@ SDL_Event event;
         grid_cell_type_t type;
             if(interface->mode==DRAW_WATER)type=FLUID;
             else if(interface->mode==DRAW_SOLID)type=SOLID;
+            else if(interface->mode==DRAW_INFLOW)type=INFLOW;
+            else if(interface->mode==DRAW_OUTFLOW)type=OUTFLOW;
             else if(interface->mode==REMOVE)type=EMPTY;
         simulation_set_rect(interface->simulation,type,interface->drag_x,interface->drag_y,interface->mouse_x,interface->mouse_y);
         }
@@ -45,6 +47,8 @@ SDL_Event event;
         {
             if(event.key.keysym.sym==SDLK_w)interface->mode=DRAW_WATER;
             else if(event.key.keysym.sym==SDLK_s)interface->mode=DRAW_SOLID;
+            else if(event.key.keysym.sym==SDLK_i)interface->mode=DRAW_INFLOW;
+            else if(event.key.keysym.sym==SDLK_o)interface->mode=DRAW_OUTFLOW;
             else if(event.key.keysym.sym==SDLK_d)interface->mode=REMOVE;
         }
     }
@@ -57,6 +61,19 @@ char* pixel=screen->pixels+y*screen->pitch+4*x;
 pixel[0]=b;
 pixel[1]=g;
 pixel[2]=r;
+}
+
+
+void draw_cell(SDL_Surface* screen,unsigned int x,unsigned int y,char r,char g,char b)
+{
+int i;
+    for(i=0;i<CELL_SCREEN_SIZE;i++)
+    {
+    put_pixel(screen,x*CELL_SCREEN_SIZE+i,y*CELL_SCREEN_SIZE,r,g,b);
+    put_pixel(screen,x*CELL_SCREEN_SIZE+i,(y+1)*CELL_SCREEN_SIZE-1,r,g,b);
+    put_pixel(screen,x*CELL_SCREEN_SIZE,y*CELL_SCREEN_SIZE+i,r,g,b);
+    put_pixel(screen,(x+1)*CELL_SCREEN_SIZE-1,y*CELL_SCREEN_SIZE+i,r,g,b);
+    }
 }
 
 void interface_render(interface_t* interface,SDL_Surface* screen)
@@ -74,17 +91,9 @@ int i,x,y;
     for(y=0;y<interface->simulation->grid->height;y++)
     for(x=0;x<interface->simulation->grid->width;x++)
     {
-        if(GRID_CELL(interface->simulation->grid,x,y).type==SOLID)
-        {
-
-            for(i=0;i<CELL_SCREEN_SIZE;i++)
-            {
-            put_pixel(screen,x*CELL_SCREEN_SIZE+i,y*CELL_SCREEN_SIZE,80,80,80);
-            put_pixel(screen,x*CELL_SCREEN_SIZE+i,(y+1)*CELL_SCREEN_SIZE-1,80,80,80);
-            put_pixel(screen,x*CELL_SCREEN_SIZE,y*CELL_SCREEN_SIZE+i,80,80,80);
-            put_pixel(screen,(x+1)*CELL_SCREEN_SIZE-1,y*CELL_SCREEN_SIZE+i,80,80,80);
-            }
-        }
+        if(GRID_CELL_TYPE(interface->simulation->grid,x,y)==SOLID)draw_cell(screen,x,y,80,80,80);
+        else if(GRID_CELL_FLAGS(interface->simulation->grid,x,y)&INFLOW)draw_cell(screen,x,y,255,160,0);
+        else if(GRID_CELL_FLAGS(interface->simulation->grid,x,y)&OUTFLOW)draw_cell(screen,x,y,0,160,255);
     }
 
     for(i=0;i<interface->simulation->particle_system->num_particles;i++)
