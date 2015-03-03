@@ -16,8 +16,42 @@ simulation->grid=grid_new(width,height);
 simulation->particle_system=particle_system_new(max_particles);
 return simulation;
 }
+
+void simulation_handle_sources(simulation_t* simulation)
+{
+int i,x,y;
+//Loop over all inflows, make sure they are fluid
+    for(y=0;y<simulation->grid->height;y++)
+    for(x=0;x<simulation->grid->width;x++)
+    {
+        if((GRID_CELL_FLAGS(simulation->grid,x,y)&INFLOW)&&GRID_CELL_TYPE(simulation->grid,x,y)!=FLUID)
+        {
+        simulation_set_cell(simulation,FLUID,x,y);
+        }
+    }
+//Loop over particles and delete any that lie in an outflow
+    for(i=0;i<simulation->particle_system->num_particles;i++)
+    {
+    particle_t* particle=simulation->particle_system->particles+i;
+    //We compute the cell in which the particle lies in the same manner as for particle_system_mark_grid_cells
+    int cell_x=(int)floor(particle->position_x+0.5);
+    int cell_y=(int)floor(particle->position_y+0.5);
+    //Now, check if the cell is out of bounds or solid
+        if(GRID_CELL_FLAGS(simulation->grid,cell_x,cell_y)&OUTFLOW)
+        {
+        //Delete the particle
+        particle_system_delete_particle(simulation->particle_system,i);
+        /*Since the current particle has been deleted, there is a
+        different particle at this location, and that also needs to
+        be checked, so for the next loop iteration, use the same i*/
+        i--;
+        }
+    }
+}
+
 void simulation_step(simulation_t* simulation,float delta_t)
 {
+simulation_handle_sources(simulation);
 //Save the current grid velocities
 grid_save_velocities(simulation->grid);
 //Apply gravity force
