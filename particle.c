@@ -56,8 +56,9 @@ int x,y;
     for(x=0;x<grid->width;x++)
     {
         if(GRID_CELL_TYPE(grid,x,y)==FLUID)GRID_CELL_SET_TYPE(grid,x,y,EMPTY);
+    GRID_CELL(grid,x,y).fluid_fraction=0.0;
     }
-/*Now, we iterate over each particle, compute which cell it is in and then mark that cell as solid*/
+/*Now, we iterate over each particle, compute which cell it is in and then mark that cell as fluid*/
 int i;
     for(i=0;i<particle_system->num_particles;i++)
     {
@@ -76,6 +77,18 @@ int i;
     /*Ideally, there shouldn't be any particles in solid cells, but if there are, those
     cells shouldn't be changed. Otherwise, mark the current cell as fluid*/
         if(GRID_CELL_TYPE(grid,cell_x,cell_y)!=SOLID)GRID_CELL_SET_TYPE(grid,cell_x,cell_y,FLUID);
+    //Compute fluid fraction estimation
+    float cell_centre_x=floor(particle->position_x);
+    float cell_centre_y=floor(particle->position_y);
+    float offset_x=particle->position_x-cell_centre_x;
+    float offset_y=particle->position_y-cell_centre_y;
+    int cell_centre_index_x=(int)cell_centre_x;
+    int cell_centre_index_y=(int)cell_centre_y;
+    #define WEIGHT 1.1*1.0/9.0
+    GRID_CELL(grid,cell_centre_index_x,cell_centre_index_y).fluid_fraction+=WEIGHT*bilinear_kernel(offset_x,offset_y);
+    GRID_CELL(grid,cell_centre_index_x+1,cell_centre_index_y).fluid_fraction+=WEIGHT*bilinear_kernel(1.0-offset_x,offset_y);
+    GRID_CELL(grid,cell_centre_index_x,cell_centre_index_y+1).fluid_fraction+=WEIGHT*bilinear_kernel(offset_x,1.0-offset_y);
+    GRID_CELL(grid,cell_centre_index_x+1,cell_centre_index_y+1).fluid_fraction+=WEIGHT*bilinear_kernel(1.0-offset_x,1.0-offset_y);
     }
 }
 

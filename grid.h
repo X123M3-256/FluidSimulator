@@ -19,6 +19,8 @@ grid_cell_type_t type;
 float divergence;
 float neighbours;
 float pressure;
+//For fluid cells
+float fluid_fraction;
 //For conjugate gradient
 float matrix_conjugate;
 float residual;

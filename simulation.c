@@ -84,10 +84,15 @@ GRID_CELL_SET_TYPE(simulation->grid,x,y,type);
     if(type==FLUID)
     {
     float fx=(float)x,fy=(float)y;
-    particle_system_add_particle(simulation->particle_system,fx+rand_float(-0.5,0.0),fy+rand_float(-0.5,0.0));
-    particle_system_add_particle(simulation->particle_system,fx+rand_float(0.0,0.5),fy+rand_float(-0.5,0.0));
-    particle_system_add_particle(simulation->particle_system,fx+rand_float(-0.5,0.0),fy+rand_float(0.0,0.5));
-    particle_system_add_particle(simulation->particle_system,fx+rand_float(0.0,0.5),fy+rand_float(0.0,0.5));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-0.5,-1.0/6.0),fy+rand_float(-0.5,-1.0/6.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-1.0/6.0,1.0/6.0),fy+rand_float(-0.5,-1.0/6.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(1.0/6.0,0.5),fy+rand_float(-0.5,-1.0/6.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-0.5,-1.0/6.0),fy+rand_float(-1.0/6.0,1.0/6.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-1.0/6.0,1.0/6.0),fy+rand_float(-1.0/6.0,1.0/6.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(1.0/6.0,0.5),fy+rand_float(-1.0/6.0,1.0/6.0));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-0.5,-1.0/6.0),fy+rand_float(1.0/6.0,0.5));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(-1.0/6.0,1.0/6.0),fy+rand_float(1.0/6.0,0.5));
+    particle_system_add_particle(simulation->particle_system,fx+rand_float(1.0/6.0,0.5),fy+rand_float(1.0/6.0,0.5));
     }
 }
 

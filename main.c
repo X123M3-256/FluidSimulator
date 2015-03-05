@@ -93,7 +93,7 @@ particle_system_populate_rectangle(particles,30,35,40,40);
 SDL_Init(SDL_INIT_VIDEO);
 atexit(SDL_Quit);
 
-simulation_t* simulation=simulation_new(200,100,128000);
+simulation_t* simulation=simulation_new(170,50,128000);
 interface_t* interface=interface_new(simulation);
 
 SDL_Surface* screen=SDL_SetVideoMode(simulation->grid->width*CELL_SCREEN_SIZE,simulation->grid->height*CELL_SCREEN_SIZE,32,SDL_DOUBLEBUF);
@@ -111,6 +111,8 @@ int milliseconds=SDL_GetTicks();
     int prev_milliseconds=milliseconds;
     milliseconds=SDL_GetTicks();
     delta_t=(float)(milliseconds-prev_milliseconds)/1000.0;
+        if(delta_t>0.05)delta_t=0.05;
+        if(SDL_GetKeyState(NULL)[SDLK_a])delta_t=0.0001;
     printf("FPS: %f\n",1/delta_t);
     }
 return 0;

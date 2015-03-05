@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_gfxPrimitives.h>
 #include "interface.h"
 
 interface_t* interface_new(simulation_t* simulation)
@@ -64,7 +65,7 @@ pixel[2]=r;
 }
 
 
-void draw_cell(SDL_Surface* screen,unsigned int x,unsigned int y,char r,char g,char b)
+void draw_cell(SDL_Surface* screen,unsigned int x,unsigned int y,unsigned char r,unsigned char g,unsigned char b)
 {
 int i;
     for(i=0;i<CELL_SCREEN_SIZE;i++)
@@ -85,17 +86,72 @@ all.w=screen->w;
 all.h=screen->h;
 SDL_FillRect(screen,&all,0);
 SDL_LockSurface(screen);
+
+grid_t* grid=interface->simulation->grid;
+
+
 //Render simulation
 int i,x,y;
-
-    for(y=0;y<interface->simulation->grid->height;y++)
-    for(x=0;x<interface->simulation->grid->width;x++)
+    for(y=0;y<grid->height;y++)
+    for(x=0;x<grid->width;x++)
     {
-        if(GRID_CELL_TYPE(interface->simulation->grid,x,y)==SOLID)draw_cell(screen,x,y,80,80,80);
-        else if(GRID_CELL_FLAGS(interface->simulation->grid,x,y)&INFLOW)draw_cell(screen,x,y,255,160,0);
-        else if(GRID_CELL_FLAGS(interface->simulation->grid,x,y)&OUTFLOW)draw_cell(screen,x,y,0,160,255);
+        if(GRID_CELL_TYPE(grid,x,y)==SOLID)draw_cell(screen,x,y,80,80,80);
+        else if(GRID_CELL_FLAGS(grid,x,y)&INFLOW)draw_cell(screen,x,y,255,160,0);
+        else if(GRID_CELL_FLAGS(grid,x,y)&OUTFLOW)draw_cell(screen,x,y,0,160,255);
+        //else draw_cell(screen,x,y,255*GRID_CELL(grid,x,y).fluid_fraction,0,0);
     }
+//Render fluid
 
+    for(y=0;y<grid->height-1;y++)
+    for(x=0;x<grid->width-1;x++)
+    {
+    int flags=0;
+    #define TOP_LEFT 1
+    #define TOP_RIGHT 2
+    #define BOTTOM_LEFT 4
+    #define BOTTOM_RIGHT 8
+        if(GRID_CELL(grid,x,y).fluid_fraction>=0.5)flags|=TOP_LEFT;
+        if(GRID_CELL(grid,x+1,y).fluid_fraction>=0.5)flags|=TOP_RIGHT;
+        if(GRID_CELL(grid,x,y+1).fluid_fraction>=0.5)flags|=BOTTOM_LEFT;
+        if(GRID_CELL(grid,x+1,y+1).fluid_fraction>=0.5)flags|=BOTTOM_RIGHT;
+
+    int x_pos=x*CELL_SCREEN_SIZE+CELL_SCREEN_SIZE/2;
+    int y_pos=y*CELL_SCREEN_SIZE+CELL_SCREEN_SIZE/2;
+
+        //if(flags==15)rectangleRGBA(screen,x_pos,y_pos,x_pos+CELL_SCREEN_SIZE,y_pos+CELL_SCREEN_SIZE,255,0,0,255);
+        //else if(flags==0)rectangleRGBA(screen,x_pos,y_pos,x_pos+CELL_SCREEN_SIZE,y_pos+CELL_SCREEN_SIZE,0,255,0,255);
+
+    float left_fraction=(0.5-GRID_CELL(grid,x,y).fluid_fraction)/(GRID_CELL(grid,x,y+1).fluid_fraction-GRID_CELL(grid,x,y).fluid_fraction);
+    float right_fraction=(0.5-GRID_CELL(grid,x+1,y).fluid_fraction)/(GRID_CELL(grid,x+1,y+1).fluid_fraction-GRID_CELL(grid,x+1,y).fluid_fraction);
+    float top_fraction=(0.5-GRID_CELL(grid,x,y).fluid_fraction)/(GRID_CELL(grid,x+1,y).fluid_fraction-GRID_CELL(grid,x,y).fluid_fraction);
+    float bottom_fraction=(0.5-GRID_CELL(grid,x,y+1).fluid_fraction)/(GRID_CELL(grid,x+1,y+1).fluid_fraction-GRID_CELL(grid,x,y+1).fluid_fraction);
+
+        if(flags==(BOTTOM_LEFT|BOTTOM_RIGHT)||flags==(TOP_LEFT|TOP_RIGHT))
+        {
+        lineRGBA(screen,x_pos,y_pos+left_fraction*CELL_SCREEN_SIZE,x_pos+CELL_SCREEN_SIZE,y_pos+right_fraction*CELL_SCREEN_SIZE,0,0,255,255);
+        }
+        else if(flags==(BOTTOM_LEFT|TOP_LEFT)||flags==(BOTTOM_RIGHT|TOP_RIGHT))
+        {
+        lineRGBA(screen,x_pos+top_fraction*CELL_SCREEN_SIZE,y_pos,x_pos+bottom_fraction*CELL_SCREEN_SIZE,y_pos+CELL_SCREEN_SIZE,0,0,255,255);
+        }
+        else if(flags==BOTTOM_LEFT||flags==(BOTTOM_RIGHT|TOP_LEFT|TOP_RIGHT))
+        {
+        lineRGBA(screen,x_pos,y_pos+left_fraction*CELL_SCREEN_SIZE,x_pos+bottom_fraction*CELL_SCREEN_SIZE,y_pos+CELL_SCREEN_SIZE,0,0,255,255);
+        }
+        else if(flags==BOTTOM_RIGHT||flags==(BOTTOM_LEFT|TOP_LEFT|TOP_RIGHT))
+        {
+        lineRGBA(screen,x_pos+bottom_fraction*CELL_SCREEN_SIZE,y_pos+CELL_SCREEN_SIZE,x_pos+CELL_SCREEN_SIZE,y_pos+right_fraction*CELL_SCREEN_SIZE,0,0,255,255);
+        }
+        else if(flags==TOP_RIGHT||flags==(BOTTOM_LEFT|BOTTOM_RIGHT|TOP_LEFT))
+        {
+        lineRGBA(screen,x_pos+top_fraction*CELL_SCREEN_SIZE,y_pos,x_pos+CELL_SCREEN_SIZE,y_pos+right_fraction*CELL_SCREEN_SIZE,0,0,255,255);
+        }
+        else if(flags==TOP_LEFT||flags==(BOTTOM_LEFT|BOTTOM_RIGHT|TOP_RIGHT))
+        {
+        lineRGBA(screen,x_pos,y_pos+left_fraction*CELL_SCREEN_SIZE,x_pos+top_fraction*CELL_SCREEN_SIZE,y_pos,0,0,255,255);
+        }
+    }
+//Render particles
     for(i=0;i<interface->simulation->particle_system->num_particles;i++)
     {
     particle_t* particle=interface->simulation->particle_system->particles+i;

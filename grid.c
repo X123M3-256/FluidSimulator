@@ -191,6 +191,7 @@ int x,y;
             if(x!=grid->width-1&&GRID_CELL_TYPE(grid,x+1,y)==FLUID)GRID_VELOCITY_X(grid,PLUS_HALF(x),y)=0.0;
             if(y!=0&&GRID_CELL_TYPE(grid,x,y-1)==FLUID)GRID_VELOCITY_Y(grid,x,MINUS_HALF(y))=0.0;
             if(y!=grid->height-1&&GRID_CELL_TYPE(grid,x,y+1)==FLUID)GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))=0.0;
+        GRID_CELL(grid,x,y).pressure=0.0;
         }
         /*Empty cells should have a pressure of zero, because the free surface has constant
         pressure.*/
