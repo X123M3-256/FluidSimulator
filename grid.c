@@ -81,12 +81,12 @@ int x,y;
 of cells. This is because we are really looking at the velocity component stored on a cells bottom edge- and that
 might need to be considered if the cell below the current one is fluid.*/
     for(y=0;y<grid->height-1;y++)
-    for(x=1;x<grid->width-1;x++)
+    for(x=0;x<grid->width-1;x++)
     {
     //If this cell, or the one below it, is a fluid then we need to apply gravity to the velocity on the bottom edge
         if(GRID_CELL_TYPE(grid,x,y)==FLUID||GRID_CELL_TYPE(grid,x,y+1)==FLUID)
         {
-        GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))+=9.81*delta_t;
+        GRID_VELOCITY_Y(grid,x,PLUS_HALF(y))+=2.0*9.81*delta_t;
         }
     }
 }
@@ -199,30 +199,25 @@ int x,y;
     }
 }
 
-/*
-void grid_jacobian_iteration(grid_t* grid)
+
+void grid_gauss_seidel(grid_t* grid)
 {
-int x,y;
-    for(y=1;y<grid->height-1;y++)
-    for(x=1;x<grid->width-1;x++)
+int x,y,i;
+    for(i=0;i<1000;i++)
     {
-        if(GRID_CELL(grid,x,y).type==FLUID)
+        for(y=1;y<grid->height-1;y++)
+        for(x=1;x<grid->width-1;x++)
         {
-        //Solid and empty cells have pressure 0, so no need to check for them
-        float pressure_sum=GRID_CELL(grid,x+1,y).pressure+GRID_CELL(grid,x-1,y).pressure+GRID_CELL(grid,x,y+1).pressure+GRID_CELL(grid,x,y-1).pressure;
-        GRID_CELL(grid,x,y).next_pressure=(pressure_sum-GRID_CELL(grid,x,y).divergence)/GRID_CELL(grid,x,y).neighbours;
-        }
-    }
-    for(y=1;y<grid->height-1;y++)
-    for(x=1;x<grid->width-1;x++)
-    {
-        if(GRID_CELL(grid,x,y).type==FLUID)
-        {
-        GRID_CELL(grid,x,y).pressure=GRID_CELL(grid,x,y).next_pressure;
+            if(GRID_CELL(grid,x,y).type==FLUID)
+            {
+            //Solid and empty cells have pressure 0, so no need to check for them
+            float pressure_sum=GRID_CELL(grid,x+1,y).pressure+GRID_CELL(grid,x-1,y).pressure+GRID_CELL(grid,x,y+1).pressure+GRID_CELL(grid,x,y-1).pressure;
+            GRID_CELL(grid,x,y).pressure=(pressure_sum-GRID_CELL(grid,x,y).divergence)/GRID_CELL(grid,x,y).neighbours;
+            }
         }
     }
 }
-*/
+
 
 
 inline float grid_calculate_residual_norm_squared(grid_t* grid)
@@ -344,6 +339,8 @@ int x,y;
     }
 }
 
+
+
 void grid_project(grid_t* grid,float delta_t)
 {
 int x,y;
@@ -352,7 +349,8 @@ grid_enforce_boundary(grid);
 //Calculate divergence (and neighbours)
 grid_calculate_divergence(grid);
 //Solve for pressure
-grid_conjugate_gradient(grid);
+grid_gauss_seidel(grid);
+//grid_conjugate_gradient(grid);
 //Update velocity
     for(y=1;y<grid->height;y++)
     for(x=1;x<grid->width;x++)
