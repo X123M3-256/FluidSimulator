@@ -91,7 +91,7 @@ might need to be considered if the cell below the current one is fluid.*/
     }
 }
 
-inline float bilinear_interpolation(float p1,float p2,float p3, float p4,float ux,float uy)
+float bilinear_interpolation(float p1,float p2,float p3, float p4,float ux,float uy)
 {
 float i1=p1+(p2-p1)*ux;
 float i2=p3+(p4-p3)*ux;
@@ -220,7 +220,7 @@ int x,y,i;
 
 
 
-inline float grid_calculate_residual_norm_squared(grid_t* grid)
+float grid_calculate_residual_norm_squared(grid_t* grid)
 {
 int x,y;
 float residual_norm_squared=0.0;
@@ -349,7 +349,7 @@ grid_enforce_boundary(grid);
 //Calculate divergence (and neighbours)
 grid_calculate_divergence(grid);
 //Solve for pressure
-grid_gauss_seidel(grid);
+grid_conjugate_gradient(grid);
 //grid_conjugate_gradient(grid);
 //Update velocity
     for(y=1;y<grid->height;y++)
