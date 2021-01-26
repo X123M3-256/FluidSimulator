@@ -84,7 +84,7 @@ int i;
     float offset_y=particle->position_y-cell_centre_y;
     int cell_centre_index_x=(int)cell_centre_x;
     int cell_centre_index_y=(int)cell_centre_y;
-    #define WEIGHT 1.1*1.0/9.0
+    #define WEIGHT 1.5*1.0/9.0
     GRID_CELL(grid,cell_centre_index_x,cell_centre_index_y).fluid_fraction+=WEIGHT*bilinear_kernel(offset_x,offset_y);
     GRID_CELL(grid,cell_centre_index_x+1,cell_centre_index_y).fluid_fraction+=WEIGHT*bilinear_kernel(1.0-offset_x,offset_y);
     GRID_CELL(grid,cell_centre_index_x,cell_centre_index_y+1).fluid_fraction+=WEIGHT*bilinear_kernel(offset_x,1.0-offset_y);
